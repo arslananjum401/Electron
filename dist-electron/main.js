@@ -8,6 +8,7 @@ const path_1 = __importDefault(require("path"));
 const ws_1 = require("ws");
 const fs_1 = __importDefault(require("fs"));
 const pdf_to_printer_1 = require("pdf-to-printer");
+const pdf_lib_1 = require("pdf-lib");
 let mainWindow = null;
 let receivedFilePath = null;
 const createWindow = () => {
@@ -23,15 +24,58 @@ const createWindow = () => {
     mainWindow.loadURL("http://localhost:5173");
 };
 // ✅ Raw PDF ko seedha printer par bhejta hai (koi re-render nahi)
-const printExampleFile = async (filePath, printerName) => {
+const printExampleFile = async (filePath, printerName, paperSize, orientation) => {
     try {
         console.log("📁 File path:", filePath);
         console.log("🖨️ Selected printer:", printerName);
-        await (0, pdf_to_printer_1.print)(filePath, { printer: printerName });
+        console.log("📄 Paper size:", paperSize);
+        console.log("🔄 Orientation:", orientation);
+        await (0, pdf_to_printer_1.print)(filePath, {
+            printer: printerName,
+            paperSize,
+            orientation,
+        });
         console.log("✅ Print successful");
     }
     catch (error) {
         console.error("❌ Printing error:", error);
+    }
+};
+// 📐 PDF ke pehle page ke dimensions (points mein) return karta hai
+const getPdfPageSize = async (filePath) => {
+    const bytes = fs_1.default.readFileSync(filePath);
+    const pdfDoc = await pdf_lib_1.PDFDocument.load(bytes);
+    const page = pdfDoc.getPages()[0];
+    const { width, height } = page.getSize();
+    return { widthPt: width, heightPt: height };
+};
+// 📐 PDF ko selected size par resize karta hai (content center ho kar fit hota hai)
+const resizePdfToSize = async (filePath, widthPt, heightPt) => {
+    const bytes = fs_1.default.readFileSync(filePath);
+    const pdfDoc = await pdf_lib_1.PDFDocument.load(bytes);
+    for (const page of pdfDoc.getPages()) {
+        const { width, height } = page.getSize();
+        const scale = Math.min(widthPt / width, heightPt / height);
+        page.scaleContent(scale, scale);
+        page.setSize(widthPt, heightPt);
+        page.translateContent((widthPt - width * scale) / 2, (heightPt - height * scale) / 2);
+    }
+    const out = await pdfDoc.save();
+    fs_1.default.writeFileSync(filePath, out);
+};
+// 📄 Current received file ki info (dimensions ke sath) return karta hai
+const getCurrentFileInfo = async () => {
+    if (!receivedFilePath || !fs_1.default.existsSync(receivedFilePath)) {
+        return { received: false };
+    }
+    const fileName = path_1.default.basename(receivedFilePath);
+    try {
+        const { widthPt, heightPt } = await getPdfPageSize(receivedFilePath);
+        return { received: true, fileName, widthPt, heightPt };
+    }
+    catch (error) {
+        console.error("❌ Not a valid PDF / failed to read size:", error);
+        return { received: true, fileName };
     }
 };
 const connectToPma = () => {
@@ -54,6 +98,11 @@ const connectToPma = () => {
         fs_1.default.writeFileSync(filePath, fileBuffer);
         receivedFilePath = filePath;
         console.log("💾 File saved:", filePath);
+        // 🔔 Renderer ko file info (dimensions ke sath) bhejo
+        const info = await getCurrentFileInfo();
+        if (mainWindow && info.received) {
+            mainWindow.webContents.send("file-received", info);
+        }
     });
     socket.on("close", () => {
         console.log("🔴 Disconnected from PMA");
@@ -73,14 +122,31 @@ electron_1.app.whenReady().then(() => {
         console.log("🖨️ Printers found:", printers);
         return printers;
     });
-    electron_1.ipcMain.handle("print-file", async (_, printerName) => {
+    electron_1.ipcMain.handle("print-file", async (_, printerName, paperSize, orientation) => {
         if (!receivedFilePath) {
             console.log("❌ No file received from PMA");
             return;
         }
         console.log("📁 File path:", receivedFilePath);
         console.log("🖨️ Printer:", printerName);
-        await printExampleFile(receivedFilePath, printerName);
+        await printExampleFile(receivedFilePath, printerName, paperSize, orientation);
+    });
+    electron_1.ipcMain.handle("get-file-info", async () => {
+        return await getCurrentFileInfo();
+    });
+    electron_1.ipcMain.handle("resize-pdf", async (_, widthPt, heightPt) => {
+        if (!receivedFilePath || !fs_1.default.existsSync(receivedFilePath)) {
+            console.log("❌ No file received to resize");
+            return { received: false };
+        }
+        try {
+            await resizePdfToSize(receivedFilePath, widthPt, heightPt);
+            console.log(`✅ PDF resized to ${widthPt} × ${heightPt} pt`);
+        }
+        catch (error) {
+            console.error("❌ Failed to resize PDF:", error);
+        }
+        return await getCurrentFileInfo();
     });
     createWindow();
     electron_1.app.on("activate", () => {

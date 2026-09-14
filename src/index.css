@@ -4,30 +4,215 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6fb;
+  color: #1f2937;
 }
 
 .app {
+  max-width: 720px;
+  margin: 0 auto;
   min-height: 100vh;
-  padding: 40px;
+  padding: 32px 24px 48px;
 }
 
-.app h1 {
-  margin-bottom: 10px;
+.app-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.app-header p {
+  margin: 0 0 24px;
+  color: #6b7280;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #4b5563;
 }
 
 .printer-list {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .printer-card {
   display: flex;
   align-items: center;
+  gap: 14px;
+
+  padding: 14px 16px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.printer-card:hover {
+  border-color: #c7d2fe;
+}
+
+.printer-card.selected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.printer-icon {
+  font-size: 22px;
+}
+
+.printer-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.printer-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.printer-id {
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.check {
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  padding: 20px;
+  background: #fff;
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  color: #9ca3af;
+}
 
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+/* Paper size list */
+.paper-size-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
 
-  max-width: 500px;
+.paper-size-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  padding: 16px 12px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.paper-size-card:hover {
+  border-color: #c7d2fe;
+}
+
+.paper-size-card.selected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.paper-size-label {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.paper-size-detail {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* File info / preview */
+.file-info {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.file-info p {
+  margin: 6px 0;
+}
+
+.file-info strong {
+  color: #4f46e5;
+}
+
+.file-info-empty {
+  color: #9ca3af;
+}
+
+.file-info-note {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Summary */
+.summary {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.summary p {
+  margin: 4px 0;
+}
+
+.summary strong {
+  color: #4f46e5;
+}
+
+/* Print button */
+.print-button {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #4f46e5;
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.print-button:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.print-button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }

@@ -3,6 +3,7 @@ import path from "path";
 import { WebSocket } from "ws";
 import fs from "fs";
 import { print } from "pdf-to-printer";
+import { PDFDocument } from "pdf-lib";
 
 let mainWindow: BrowserWindow | null = null;
 let receivedFilePath: string | null = null;
@@ -24,17 +25,76 @@ const createWindow = () => {
 // ✅ Raw PDF ko seedha printer par bhejta hai (koi re-render nahi)
 const printExampleFile = async (
   filePath: string,
-  printerName: string
+  printerName: string,
+  paperSize?: string,
+  orientation?: "portrait" | "landscape"
 ) => {
   try {
     console.log("📁 File path:", filePath);
     console.log("🖨️ Selected printer:", printerName);
+    console.log("📄 Paper size:", paperSize);
+    console.log("🔄 Orientation:", orientation);
 
-    await print(filePath, { printer: printerName });
+    await print(filePath, {
+      printer: printerName,
+      paperSize,
+      orientation,
+    });
 
     console.log("✅ Print successful");
   } catch (error) {
     console.error("❌ Printing error:", error);
+  }
+};
+
+// 📐 PDF ke pehle page ke dimensions (points mein) return karta hai
+const getPdfPageSize = async (filePath: string) => {
+  const bytes = fs.readFileSync(filePath);
+  const pdfDoc = await PDFDocument.load(bytes);
+  const page = pdfDoc.getPages()[0];
+  const { width, height } = page.getSize();
+  return { widthPt: width, heightPt: height };
+};
+
+// 📐 PDF ko selected size par resize karta hai (content center ho kar fit hota hai)
+const resizePdfToSize = async (
+  filePath: string,
+  widthPt: number,
+  heightPt: number
+) => {
+  const bytes = fs.readFileSync(filePath);
+  const pdfDoc = await PDFDocument.load(bytes);
+
+  for (const page of pdfDoc.getPages()) {
+    const { width, height } = page.getSize();
+    const scale = Math.min(widthPt / width, heightPt / height);
+
+    page.scaleContent(scale, scale);
+    page.setSize(widthPt, heightPt);
+    page.translateContent(
+      (widthPt - width * scale) / 2,
+      (heightPt - height * scale) / 2
+    );
+  }
+
+  const out = await pdfDoc.save();
+  fs.writeFileSync(filePath, out);
+};
+
+// 📄 Current received file ki info (dimensions ke sath) return karta hai
+const getCurrentFileInfo = async () => {
+  if (!receivedFilePath || !fs.existsSync(receivedFilePath)) {
+    return { received: false };
+  }
+
+  const fileName = path.basename(receivedFilePath);
+
+  try {
+    const { widthPt, heightPt } = await getPdfPageSize(receivedFilePath);
+    return { received: true, fileName, widthPt, heightPt };
+  } catch (error) {
+    console.error("❌ Not a valid PDF / failed to read size:", error);
+    return { received: true, fileName };
   }
 };
 
@@ -69,6 +129,12 @@ const connectToPma = () => {
 
     receivedFilePath = filePath;
     console.log("💾 File saved:", filePath);
+
+    // 🔔 Renderer ko file info (dimensions ke sath) bhejo
+    const info = await getCurrentFileInfo();
+    if (mainWindow && info.received) {
+      mainWindow.webContents.send("file-received", info);
+    }
   });
 
   socket.on("close", () => {
@@ -98,7 +164,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     "print-file",
-    async (_, printerName: string) => {
+    async (
+      _,
+      printerName: string,
+      paperSize?: string,
+      orientation?: "portrait" | "landscape"
+    ) => {
       if (!receivedFilePath) {
         console.log("❌ No file received from PMA");
         return;
@@ -109,8 +180,33 @@ app.whenReady().then(() => {
 
       await printExampleFile(
         receivedFilePath,
-        printerName
+        printerName,
+        paperSize,
+        orientation
       );
+    }
+  );
+
+  ipcMain.handle("get-file-info", async () => {
+    return await getCurrentFileInfo();
+  });
+
+  ipcMain.handle(
+    "resize-pdf",
+    async (_, widthPt: number, heightPt: number) => {
+      if (!receivedFilePath || !fs.existsSync(receivedFilePath)) {
+        console.log("❌ No file received to resize");
+        return { received: false };
+      }
+
+      try {
+        await resizePdfToSize(receivedFilePath, widthPt, heightPt);
+        console.log(`✅ PDF resized to ${widthPt} × ${heightPt} pt`);
+      } catch (error) {
+        console.error("❌ Failed to resize PDF:", error);
+      }
+
+      return await getCurrentFileInfo();
     }
   );
 
