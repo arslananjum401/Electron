@@ -90,7 +90,7 @@ function App() {
     setSelectedPageSize(size);
 
     if (!fileInfo) {
-      console.log("⚠️ Abhi koi file received nahi hui — resize nahi hoga");
+      console.log("No file recieved yet");
       return;
     }
 
@@ -147,9 +147,8 @@ function App() {
           ) : (
             printers.map((printer) => (
               <div
-                className={`printer-card ${
-                  selectedPrinter === printer.name ? "selected" : ""
-                }`}
+                className={`printer-card ${selectedPrinter === printer.name ? "selected" : ""
+                  }`}
                 key={printer.name}
                 onClick={() => {
                   setSelectedPrinter(printer.name);
@@ -177,9 +176,8 @@ function App() {
         <div className="paper-size-list">
           {PAGE_SIZES.map((size) => (
             <div
-              className={`paper-size-card ${
-                selectedPageSize.id === size.id ? "selected" : ""
-              }`}
+              className={`paper-size-card ${selectedPageSize.id === size.id ? "selected" : ""
+                }`}
               key={size.id}
               onClick={() => handlePageSizeSelect(size)}
             >
@@ -195,8 +193,7 @@ function App() {
         <div className="file-info">
           {!fileInfo ? (
             <p className="file-info-empty">
-              ⏳ Abhi koi PDF received nahi hui. PMA se file aate hi yahan
-              uski size dikhegi.
+              ⏳ No PDF has been received yet. As soon as the file arrives from PMA, its size will be displayed here.
             </p>
           ) : (
             <>
