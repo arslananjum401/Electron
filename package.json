@@ -6,18 +6,38 @@
     "dev": "concurrently -k \"vite\" \"npm run electron:watch\" \"npm run electron:start\"",
     "electron:build": "tsc -p tsconfig.electron.json",
     "electron:watch": "tsc -p tsconfig.electron.json --watch",
-    "electron:start": "wait-on http://localhost:5173 dist-electron/main.js && electron dist-electron/main.js"
+    "electron:start": "wait-on http://localhost:5173 dist-electron/main.js && electron dist-electron/main.js",
+    "start": "cross-env NODE_ENV=production electron dist-electron/main.js",
+    "build": "tsc -p tsconfig.electron.json && vite build",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win"
   },
   "keywords": [],
-  "author": "",
+  "author": "PMA",
   "license": "ISC",
-  "description": "",
+  "description": "PMA print client - auto-downloads PDFs from PMA.",
+  "build": {
+    "appId": "com.pma.print",
+    "productName": "PMA Print",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**"
+    ],
+    "win": {
+      "target": ["nsis"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  },
   "dependencies": {
-    "electron": "^44.2.0",
+    "dotenv": "^16.6.1",
     "pdf-lib": "^1.17.1",
-    "pdf-to-printer": "^5.8.1",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
     "ws": "^8.21.3"
   },
   "devDependencies": {
@@ -28,7 +48,10 @@
     "@vitejs/plugin-react": "^6.1.1",
     "concurrently": "^10.0.5",
     "cross-env": "^10.1.0",
+    "electron": "^44.2.0",
     "electron-builder": "^26.15.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",

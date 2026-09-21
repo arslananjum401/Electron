@@ -49,23 +49,21 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-
   padding: 14px 16px;
   background: #fff;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .printer-card:hover {
-  border-color: #c7d2fe;
+  border-color: #9ca3af;
 }
 
 .printer-card.selected {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.15);
 }
 
 .printer-icon {
@@ -96,7 +94,7 @@ body {
 
 .check {
   font-weight: 700;
-  color: #4f46e5;
+  color: #6b7280;
 }
 
 .empty-state {
@@ -110,7 +108,6 @@ body {
   color: #9ca3af;
 }
 
-/* Paper size list */
 .paper-size-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -122,23 +119,38 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-
   padding: 16px 12px;
   background: #fff;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .paper-size-card:hover {
-  border-color: #c7d2fe;
+  border-color: #9ca3af;
 }
 
 .paper-size-card.selected {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.15);
+}
+
+.paper-size-card.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+.paper-size-card.disabled:hover {
+  border-color: #e5e7eb;
+}
+
+.section-hint {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f59e0b;
 }
 
 .paper-size-label {
@@ -151,7 +163,6 @@ body {
   color: #9ca3af;
 }
 
-/* File info / preview */
 .file-info {
   padding: 16px;
   background: #fff;
@@ -164,7 +175,7 @@ body {
 }
 
 .file-info strong {
-  color: #4f46e5;
+  color: #6b7280;
 }
 
 .file-info-empty {
@@ -176,7 +187,6 @@ body {
   font-weight: 600;
 }
 
-/* Summary */
 .summary {
   padding: 16px;
   background: #fff;
@@ -190,26 +200,24 @@ body {
 }
 
 .summary strong {
-  color: #4f46e5;
+  color: #6b7280;
 }
 
-/* Print button */
 .print-button {
   width: 100%;
   padding: 16px;
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  background: #4f46e5;
+  background: #6b7280;
   border: none;
   border-radius: 12px;
-
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .print-button:hover:not(:disabled) {
-  background: #4338ca;
+  background: #4b5563;
 }
 
 .print-button:disabled {

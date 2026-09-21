@@ -1,2 +1,6 @@
 node_modules/
 received-files/
+release/
+dist/
+dist-electron/
+.env

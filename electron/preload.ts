@@ -1,26 +1,16 @@
-
 import { contextBridge, ipcRenderer } from "electron";
+import type { OptionsState, PdfFileInfo } from "./types";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   getPrinters: () => ipcRenderer.invoke("get-printers"),
 
-  printFile: (
-    printerName: string,
-    paperSize?: string,
-    orientation?: "portrait" | "landscape"
-  ) =>
-    ipcRenderer.invoke(
-      "print-file",
-      printerName,
-      paperSize,
-      orientation
-    ),
-
   getFileInfo: () => ipcRenderer.invoke("get-file-info"),
 
-  resizePdf: (widthPt: number, heightPt: number) =>
-    ipcRenderer.invoke("resize-pdf", widthPt, heightPt),
+  setOptions: (options: Partial<OptionsState>) =>
+    ipcRenderer.invoke("set-options", options),
 
-  onFileReceived: (callback: (info: any) => void) =>
+  downloadFile: () => ipcRenderer.invoke("download-pdf"),
+
+  onFileReceived: (callback: (info: PdfFileInfo) => void) =>
     ipcRenderer.on("file-received", (_event, info) => callback(info)),
 });
